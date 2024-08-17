@@ -1,43 +1,68 @@
 <!DOCTYPE html>  
-<html lang="en">  
+<html>  
 <head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Telegram Login Demo</title>  
+  <title>Telegram Login Example</title>  
+  <script>  
+    let userInfo = null;  
+    let telegramWebAppReady = false;  
+
+    function initTelegramWebApp() {  
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {  
+        window.Telegram.WebApp.init();  
+        telegramWebAppReady = true;  
+        tryAuthenticateWithTelegram();  
+      } else {  
+        setTimeout(initTelegramWebApp, 100);  
+      }  
+    }  
+
+    function tryAuthenticateWithTelegram() {  
+      // 获取初始数据  
+      const initData = window.Telegram.WebApp.initData;  
+
+      // 向后端发送认证请求  
+      fetch('/api/telegram/auth', {  
+        method: 'POST',  
+        headers: {  
+          'Content-Type': 'application/json'  
+        },  
+        body: JSON.stringify({ initData })  
+      })  
+      .then(response => response.json())  
+      .then(data => {  
+        if (data.error) {  
+          // 处理错误  
+          console.error(data.error);  
+        } else {  
+          // 获取已验证的账户信息  
+          userInfo = data;  
+          console.log('Authenticated account:', userInfo);  
+          // 在应用中保存用户信息并进行后续操作  
+          saveUserInfo(userInfo);  
+        }  
+      })  
+      .catch(error => {  
+        console.error('Error authenticating with Telegram:', error);  
+      });  
+    }  
+
+    function saveUserInfo(userInfo) {  
+      // 在应用中保存用户信息  
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));  
+    }  
+
+    window.onload = function() {  
+      initTelegramWebApp();  
+    };  
+  </script>  
 </head>  
 <body>  
-    <h1>Telegram Login Demo</h1>  
-    <div id="telegramLoginButton"></div>  
-    <div id="userInfo" style="display: none;">  
-        <h2>Welcome, <span id="userName"></span>!</h2>  
-        <p>Your Telegram ID: <span id="userId"></span></p>  
-        <p>Username: <span id="userUsername"></span></p>  
+  <div id="app">  
+    <div style="display: none;" id="user-info" v-if="userInfo">  
+      <p>Logged in as: <span id="username"></span></p>  
     </div>  
-
-    <script>  
-        // 定义回调函数  
-        function onTelegramAuth(user) {  
-            console.log('Logged in as:', user);  
-            
-            // 显示用户信息  
-            document.getElementById('userInfo').style.display = 'block';  
-            document.getElementById('userName').textContent = user.first_name + ' ' + user.last_name;  
-            document.getElementById('userId').textContent = user.id;  
-            document.getElementById('userUsername').textContent = user.username ? '@' + user.username : 'N/A';  
-        }  
-
-        // 创建并添加 Telegram 登录脚本  
-        window.addEventListener('load', function() {  
-            var script = document.createElement('script');  
-            script.async = true;  
-            script.src = 'https://telegram.org/js/telegram-widget.js?22';  
-            script.setAttribute('data-telegram-login', 'eggs_bot'); // 替换为您的 Bot 用户名  
-            script.setAttribute('data-size', 'large');  
-            script.setAttribute('data-onauth', 'onTelegramAuth(user)');  
-            script.setAttribute('data-request-access', 'write');  
-            
-            document.getElementById('telegramLoginButton').appendChild(script);  
-        });  
-    </script>  
+    <button style="display: none;" id="login-button" onclick="loginWithTelegram()">Login with Telegram</button>  
+    <div id="loading">Loading...</div>  
+  </div>  
 </body>  
 </html>

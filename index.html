@@ -1,68 +1,14 @@
-<!DOCTYPE html>  
-<html>  
-<head>  
-  <title>Telegram Login Example</title>  
-  <script>  
-    let userInfo = null;  
-    let telegramWebAppReady = false;  
-
-    function initTelegramWebApp() {  
-      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {  
-        window.Telegram.WebApp.init();  
-        telegramWebAppReady = true;  
-        tryAuthenticateWithTelegram();  
-      } else {  
-        setTimeout(initTelegramWebApp, 100);  
-      }  
-    }  
-
-    function tryAuthenticateWithTelegram() {  
-      // 获取初始数据  
-      const initData = window.Telegram.WebApp.initData;  
-
-      // 向后端发送认证请求  
-      fetch('/api/telegram/auth', {  
-        method: 'POST',  
-        headers: {  
-          'Content-Type': 'application/json'  
-        },  
-        body: JSON.stringify({ initData })  
-      })  
-      .then(response => response.json())  
-      .then(data => {  
-        if (data.error) {  
-          // 处理错误  
-          console.error(data.error);  
-        } else {  
-          // 获取已验证的账户信息  
-          userInfo = data;  
-          console.log('Authenticated account:', userInfo);  
-          // 在应用中保存用户信息并进行后续操作  
-          saveUserInfo(userInfo);  
-        }  
-      })  
-      .catch(error => {  
-        console.error('Error authenticating with Telegram:', error);  
-      });  
-    }  
-
-    function saveUserInfo(userInfo) {  
-      // 在应用中保存用户信息  
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));  
-    }  
-
-    window.onload = function() {  
-      initTelegramWebApp();  
-    };  
-  </script>  
-</head>  
-<body>  
-  <div id="app">  
-    <div style="display: none;" id="user-info" v-if="userInfo">  
-      <p>Logged in as: <span id="username"></span></p>  
-    </div>  
-    <button style="display: none;" id="login-button" onclick="loginWithTelegram()">Login with Telegram</button>  
-    <div id="loading">Loading...</div>  
-  </div>  
-</body>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script type="module" crossorigin src="/assets/index-DbRBV11p.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-yaJQS1yC.css">
+</head>
+<body>
+<div id="app"></div>
+</body>
 </html>
